@@ -12,7 +12,7 @@ if (cursor && window.matchMedia('(pointer: fine)').matches) {
     requestAnimationFrame(animRing);
   }
   animRing();
-  document.querySelectorAll('a, button, .skill-card, .project-card, .about-card, .ai-tech').forEach(el => {
+  document.querySelectorAll('a, button, .skill-card, .project-card, .about-card, .ai-tech, .cert-card, .cert-img-wrap').forEach(el => {
     el.addEventListener('mouseenter', () => { ring.style.width='56px'; ring.style.height='56px'; ring.style.borderColor='var(--cyan)'; });
     el.addEventListener('mouseleave', () => { ring.style.width='36px'; ring.style.height='36px'; ring.style.borderColor='var(--blue)'; });
   });
@@ -96,13 +96,38 @@ if (heroStats) {
   counterObserver.observe(heroStats);
 }
 
-/* ===== CONTACT FORM FEEDBACK ===== */
+/* ===== CERTIFICATE LIGHTBOX ===== */
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightboxImg');
+const lightboxClose = document.getElementById('lightboxClose');
+
+document.querySelectorAll('.cert-img-wrap').forEach(wrap => {
+  wrap.addEventListener('click', () => {
+    const img = wrap.querySelector('.cert-img');
+    lightboxImg.src = img.src;
+    lightboxImg.alt = img.alt;
+    lightbox.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  });
+});
+
+function closeLightbox() {
+  lightbox.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+lightboxClose.addEventListener('click', closeLightbox);
+lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+/* ===== CONTACT FORM — sends real email via mailto ===== */
 const sendBtn = document.getElementById('sendBtn');
 if (sendBtn) {
   sendBtn.addEventListener('click', () => {
-    const nameInput = document.querySelector('.form-input[type="text"]');
-    const emailInput = document.querySelector('.form-input[type="email"]');
-    const msgInput = document.querySelector('.form-textarea');
+    const nameInput  = document.getElementById('formName');
+    const emailInput = document.getElementById('formEmail');
+    const msgInput   = document.getElementById('formMsg');
+
     if (!nameInput.value.trim() || !emailInput.value.trim() || !msgInput.value.trim()) {
       sendBtn.querySelector('span').textContent = 'Please fill all fields';
       sendBtn.style.background = 'rgba(255,100,100,0.3)';
@@ -112,7 +137,21 @@ if (sendBtn) {
       }, 2000);
       return;
     }
-    sendBtn.querySelector('span').textContent = 'Message Sent ✓';
+
+    // Build mailto link with form values
+    const subject = encodeURIComponent('Portfolio Contact from ' + nameInput.value.trim());
+    const body    = encodeURIComponent(
+      'Name: ' + nameInput.value.trim() + '\n' +
+      'Email: ' + emailInput.value.trim() + '\n\n' +
+      msgInput.value.trim()
+    );
+    const mailtoURL = 'mailto:sanjaykumargunasekaran@gmail.com?subject=' + subject + '&body=' + body;
+
+    // Open the mailto link in the mail client
+    window.location.href = mailtoURL;
+
+    // Show success feedback
+    sendBtn.querySelector('span').textContent = 'Opening Mail Client ✓';
     sendBtn.style.background = 'var(--accent)';
     sendBtn.style.color = 'var(--bg)';
     setTimeout(() => {
@@ -121,5 +160,30 @@ if (sendBtn) {
       sendBtn.style.color = '';
       nameInput.value = ''; emailInput.value = ''; msgInput.value = '';
     }, 3000);
+  });
+}
+
+/* ===== FOOTER EMAIL BUTTON ===== */
+const footerMailBtn = document.getElementById('footerMailBtn');
+if (footerMailBtn) {
+  // Clicking the footer Email Me button opens a pre-filled mailto
+  footerMailBtn.addEventListener('click', e => {
+    // Check if the contact form has any pre-filled data to carry forward
+    const nameInput  = document.getElementById('formName');
+    const emailInput = document.getElementById('formEmail');
+    const msgInput   = document.getElementById('formMsg');
+    const hasFormData = nameInput && nameInput.value.trim();
+
+    if (hasFormData) {
+      e.preventDefault();
+      const subject = encodeURIComponent('Portfolio Contact from ' + nameInput.value.trim());
+      const body    = encodeURIComponent(
+        'Name: ' + nameInput.value.trim() + '\n' +
+        'Email: ' + (emailInput ? emailInput.value.trim() : '') + '\n\n' +
+        (msgInput ? msgInput.value.trim() : '')
+      );
+      window.location.href = 'mailto:sanjaykumargunasekaran@gmail.com?subject=' + subject + '&body=' + body;
+    }
+    // If no form data, the default href="mailto:..." on the anchor handles it naturally
   });
 }
