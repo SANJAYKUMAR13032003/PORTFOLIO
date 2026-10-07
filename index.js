@@ -120,70 +120,67 @@ lightboxClose.addEventListener('click', closeLightbox);
 lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 
-/* ===== CONTACT FORM — sends real email via mailto ===== */
-const sendBtn = document.getElementById('sendBtn');
-if (sendBtn) {
-  sendBtn.addEventListener('click', () => {
-    const nameInput  = document.getElementById('formName');
-    const emailInput = document.getElementById('formEmail');
-    const msgInput   = document.getElementById('formMsg');
+/* ===== CONTACT FORM — REAL EMAIL SEND ===== */
 
-    if (!nameInput.value.trim() || !emailInput.value.trim() || !msgInput.value.trim()) {
-      sendBtn.querySelector('span').textContent = 'Please fill all fields';
-      sendBtn.style.background = 'rgba(255,100,100,0.3)';
-      setTimeout(() => {
-        sendBtn.querySelector('span').textContent = 'Send Message →';
-        sendBtn.style.background = '';
-      }, 2000);
+const sendBtn = document.getElementById('sendBtn');
+
+if (sendBtn) {
+
+  sendBtn.addEventListener('click', async () => {
+
+    const nameInput = document.getElementById('formName');
+    const emailInput = document.getElementById('formEmail');
+    const msgInput = document.getElementById('formMsg');
+
+    if (
+      !nameInput.value.trim() ||
+      !emailInput.value.trim() ||
+      !msgInput.value.trim()
+    ) {
+
+      sendBtn.querySelector('span').textContent =
+        'Please fill all fields';
+
       return;
     }
 
-    // Build mailto link with form values
-    const subject = encodeURIComponent('Portfolio Contact from ' + nameInput.value.trim());
-    const body    = encodeURIComponent(
-      'Name: ' + nameInput.value.trim() + '\n' +
-      'Email: ' + emailInput.value.trim() + '\n\n' +
-      msgInput.value.trim()
-    );
-    const mailtoURL = 'mailto:sanjaykumargunasekaran@gmail.com?subject=' + subject + '&body=' + body;
+    try {
 
-    // Open the mailto link in the mail client
-    window.location.href = mailtoURL;
+      sendBtn.querySelector('span').textContent =
+        'Sending...';
 
-    // Show success feedback
-    sendBtn.querySelector('span').textContent = 'Opening Mail Client ✓';
-    sendBtn.style.background = 'var(--accent)';
-    sendBtn.style.color = 'var(--bg)';
-    setTimeout(() => {
-      sendBtn.querySelector('span').textContent = 'Send Message →';
-      sendBtn.style.background = '';
-      sendBtn.style.color = '';
-      nameInput.value = ''; emailInput.value = ''; msgInput.value = '';
-    }, 3000);
-  });
-}
-
-/* ===== FOOTER EMAIL BUTTON ===== */
-const footerMailBtn = document.getElementById('footerMailBtn');
-if (footerMailBtn) {
-  // Clicking the footer Email Me button opens a pre-filled mailto
-  footerMailBtn.addEventListener('click', e => {
-    // Check if the contact form has any pre-filled data to carry forward
-    const nameInput  = document.getElementById('formName');
-    const emailInput = document.getElementById('formEmail');
-    const msgInput   = document.getElementById('formMsg');
-    const hasFormData = nameInput && nameInput.value.trim();
-
-    if (hasFormData) {
-      e.preventDefault();
-      const subject = encodeURIComponent('Portfolio Contact from ' + nameInput.value.trim());
-      const body    = encodeURIComponent(
-        'Name: ' + nameInput.value.trim() + '\n' +
-        'Email: ' + (emailInput ? emailInput.value.trim() : '') + '\n\n' +
-        (msgInput ? msgInput.value.trim() : '')
+      await emailjs.send(
+        'service_wm568jn',
+        'template_vmgembj',
+        {
+          from_name: nameInput.value,
+          from_email: emailInput.value,
+          message: msgInput.value
+        }
       );
-      window.location.href = 'mailto:sanjaykumargunasekaran@gmail.com?subject=' + subject + '&body=' + body;
+
+      sendBtn.querySelector('span').textContent =
+        'Message Sent ✓';
+
+      nameInput.value = '';
+      emailInput.value = '';
+      msgInput.value = '';
+
+    } catch (error) {
+
+      console.error(error);
+
+      sendBtn.querySelector('span').textContent =
+        'Failed to Send ✗';
     }
-    // If no form data, the default href="mailto:..." on the anchor handles it naturally
+
+    setTimeout(() => {
+
+      sendBtn.querySelector('span').textContent =
+        'Send Message →';
+
+    }, 3000);
+
   });
+
 }
